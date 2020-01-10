@@ -1,8 +1,12 @@
 var config = {
     type: Phaser.AUTO,
-    width: 800,
-    height: 600,
-    scene: {
+    scale: {
+        parent: 'gameDiv',
+        mode: Phaser.Scale.RESIZE,
+        // width: 800,
+        // height: 600
+    },
+    scene: {    
         preload: preload,
         create: create,
         update: update
@@ -102,7 +106,7 @@ function create() {
         delay: 100, 
     });
 
-    cursors = this.input.activePointer;
+    cursors = this.input.activePointer; // doesn't work on mobile
 }
 
 
