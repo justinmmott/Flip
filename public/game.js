@@ -48,10 +48,17 @@ function create() {
         // maybe have some logic that de-readys players 
     });
 
+    // a player disconnected after the game began
+    this.socket.on('gameCancelled', function() { 
+        // maybe have some logic where if they player runs out of cards so 
+        // they know they have lost than their disconnection won't cancel 
+        // the game for everyone
+    });
+
     // someone has flipped a card
     this.socket.on('playerFlipped', function(playerInfo) {
-        // display sprite of card that was flipped unless it is your own
-
+        // display sprite of card that was flipped
+        card.play('flip');
     });
 
     // everyone has hit ready
@@ -62,13 +69,6 @@ function create() {
     // someone has won
     this.socket.on('gameOver', function(winner) {
         // display a win/loss screen for players
-    });
-
-    // a player disconnected after the game began
-    this.socket.on('gameCancelled', function() { 
-        // maybe have some logic where if they player runs out of cards so 
-        // they know they have lost than their disconnection won't cancel 
-        // the game for everyone
     });
 
     // most of the code below will probably go into gameStart
@@ -115,8 +115,9 @@ function addOtherPlayers(self, playerInfo) {
 function update() {
      if (cursors.isDown && !isFliped) {
         isFliped = true;
-        card.play('flip');
+        
         this.socket.emit('playerFlipping');
+        
     } else if (isFliped && isMoved < 5) {
         isMoved += 1;
         card.y -= 60;

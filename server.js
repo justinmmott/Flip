@@ -65,7 +65,7 @@ io.on('connection', function(socket) {
         players[socket.id].deckPlayed.push(curr_card);
         //flip a card
         //updateBestHand(players[socket.id]);
-        socket.broadcast.emit('playerFlipped', {
+        io.emit('playerFlipped', {
             player: players[socket.id].id,
             card: 'card'
         });
@@ -75,7 +75,7 @@ io.on('connection', function(socket) {
     socket.on('doneFlipping', function() {
         playersDoneFlipping += 1;
         if(playersDoneFlipping === Object.keys(players).length) {
-            socket.broadcast.emit('gameOver', currentWinner);
+            io.emit('gameOver', currentWinner);
         }
     });
 
