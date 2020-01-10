@@ -18,12 +18,16 @@ function preload() {
 var card;
 var cursors; 
 
+// stupid stuff for the current flip animation
 var isFliped = false;
 var isMoved = 0;
 
 function create() {
     this.socket = io();
-    var self  = this;
+    var self  = this; // I don't get why I need to do this but it errors if not
+    
+    // the server will give you information on all other players that have 
+    // joined the session
     this.socket.on('currentPlayers', function (players) {
         Object.keys(players).forEach(function(id) {
             if(players[id].playerId === self.socket.id) {
@@ -34,26 +38,42 @@ function create() {
         });
     });
 
+    // A player has joined the game after you join the game
     this.socket.on('newPlayer', function (playerInfo) {
         addOtherPlayers(self, playerInfo);
     });
 
+    // A player has disconnected 
     this.socket.on('disconnect', function(playerId) {
-        // this.otherPlayers.getChildren().forEach(function(otherPlayers) {
-        //     if(playerId === otherPlayer.playerId) {
-        //         otherPlayer.destroy();
-        //     }
-        // });
+        // maybe have some logic that de-readys players 
     });
 
+    // someone has flipped a card
     this.socket.on('playerFlipped', function(playerInfo) {
-        // this.otherPlayer.getChildren().forEach(function(otherPlayer) {
-        //     if(playerInfo.playerId === otherPlayer.playerId) {
-        //         ////asdfasdf
-        //         console.log(playerInfo);
-        //     }
-        // });
+        // display sprite of card that was flipped unless it is your own
+
     });
+
+    // everyone has hit ready
+    this.socket.on('gameStart', function() {
+        // display sprites and check if it is your turn
+    });
+
+    // someone has won
+    this.socket.on('gameOver', function(winner) {
+        // display a win/loss screen for players
+    });
+
+    // a player disconnected after the game began
+    this.socket.on('gameCancelled', function() { 
+        // maybe have some logic where if they player runs out of cards so 
+        // they know they have lost than their disconnection won't cancel 
+        // the game for everyone
+    });
+
+    // most of the code below will probably go into gameStart
+    // however this code has very little functionality just a 
+    // good reference for how to use phaser
 
     var frames = this.textures.get('deck').getFrameNames();
     frames.splice( frames.indexOf('Card_back.svg'), 1 );
@@ -69,13 +89,8 @@ function create() {
     this.add.sprite(deckX + 20, deckY, 'deck', 'Card_back').setScale(.5);
     card = this.add.sprite(deckX + 25, deckY, 'deck', 'Card_back').setScale(.5);
 
-
-//    this.add.sprite(100, 200, 'deck', 'Card_back').setScale(.5).angle += 90;
-
-
     this.anims.create({
         key: 'flip',
-        defaultTextureKey: 'deck',
         frames: [
             {key: 'deck', frame: currCard, duration: 100 } 
         ],
@@ -86,10 +101,15 @@ function create() {
     cursors = this.input.activePointer;
 }
 
+
+// Use addPlayer and addOtherPlayers to place sprite at the beginning of 
+// the game
 function addPlayer(self, playerInfo) {
+
 }
 
 function addOtherPlayers(self, playerInfo) {
+    // need to figure out how we want to place the players around the table
 }
 
 function update() {

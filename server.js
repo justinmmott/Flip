@@ -3,17 +3,18 @@ var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io').listen(server);
 
-var players = {};
-
 app.use(express.static(__dirname + '/public'));
 
 app.get('/', function(req, res) {
     res.sendFile(__dirname + '/index.html');
 });
 
-var playersReady = [];
-var playersDoneFlipping = 0;
-var currentWinner;
+var players = {}; // all player in game
+var playersReady = []; // list of player objects that have hit ready
+var playersDoneFlipping = 0; // unsure if we need this and if so 
+                             // if it needs to be made into a 
+                             // player object array
+var currentWinner; // player object
 var didGameStart = false;
 
 
@@ -29,11 +30,13 @@ io.on('connection', function(socket) {
         current_best_hand: []
     };
 
+    // send the new player information about the other players
     socket.emit('currentPlayer', players);
 
+    // tells everyone else that a new player has join the session
     socket.broadcast.emit('newPlayer', players[socket.id]);
 
-
+    // someone has disconnected
     socket.on('disconnect', function() {
         console.log('user disconnected', socket.id);
         delete players[socket.id];
@@ -47,6 +50,7 @@ io.on('connection', function(socket) {
         io.emit('disconnect', socket.id);
     });
 
+    // someone has readied up
     socket.on('ready', function(playerId) {
         playersReady.push(playerId);
         if(playersReady.length === Object.keys(players).length) {
@@ -55,6 +59,7 @@ io.on('connection', function(socket) {
         }
     });
 
+    // a player has clicked to flip their card
     socket.on('playerFlipping', function () {
         var curr_card = players[socket.id].deckLeft.pop();
         players[socket.id].deckPlayed.push(curr_card);
@@ -66,6 +71,7 @@ io.on('connection', function(socket) {
         });
     });
 
+    // someone has flipped through their whole deck
     socket.on('doneFlipping', function() {
         playersDoneFlipping += 1;
         if(playersDoneFlipping === Object.keys(players).length) {
