@@ -58,9 +58,12 @@ io.on('connection', function(socket) {
     socket.on('playerFlipping', function () {
         var curr_card = players[socket.id].deckLeft.pop();
         players[socket.id].deckPlayed.push(curr_card);
+        //flip a card
         //updateBestHand(players[socket.id]);
-        console.log("SomeoneFlipped");
-        socket.broadcast.emit('playerFlipped', players[socket.id]);
+        socket.broadcast.emit('playerFlipped', {
+            player: players[socket.id].id,
+            card: 'card'
+        });
     });
 
     socket.on('doneFlipping', function() {
