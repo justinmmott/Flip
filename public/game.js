@@ -58,7 +58,11 @@ function create() {
     // someone has flipped a card
     this.socket.on('playerFlipped', function(playerInfo) {
         // display sprite of card that was flipped
-        card.play('flip');
+        card.play('flip'); // this is so that we can find the random card 
+                           // based off of when they click, this may add
+                           // lag tho since they have to wait for the server
+                           // to respond so maybe we change this based off 
+                           // of the option
     });
 
     // everyone has hit ready
@@ -117,7 +121,7 @@ function update() {
         isFliped = true;
         
         this.socket.emit('playerFlipping');
-        
+
     } else if (isFliped && isMoved < 5) {
         isMoved += 1;
         card.y -= 60;
