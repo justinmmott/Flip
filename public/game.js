@@ -3,8 +3,6 @@ var config = {
     scale: {
         parent: 'gameDiv',
         mode: Phaser.Scale.RESIZE,
-        // width: 800,
-        // height: 600
     },
     scene: {    
         preload: preload,

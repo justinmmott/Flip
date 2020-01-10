@@ -81,6 +81,10 @@ io.on('connection', function(socket) {
 
 });
 
+function updateBestHand(player) {
+    
+}
+
 server.listen(8081, function() {
     console.log(`Listening on ${server.address().port}`);
 });
