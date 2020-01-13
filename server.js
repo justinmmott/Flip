@@ -31,7 +31,7 @@ io.on('connection', function(socket) {
     };
 
     // send the new player information about the other players
-    socket.emit('currentPlayer', players);
+    socket.emit('currentPlayers', players);
 
     // tells everyone else that a new player has join the session
     socket.broadcast.emit('newPlayer', players[socket.id]);

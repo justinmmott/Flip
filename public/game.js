@@ -20,6 +20,9 @@ function preload() {
 var card;
 var cursors; 
 
+var myId;
+var OtherPlayers = {};
+
 // stupid stuff for the current flip animation
 var isFliped = false;
 var isMoved = 0;
@@ -59,12 +62,14 @@ function create() {
 
     // someone has flipped a card
     this.socket.on('playerFlipped', function(playerInfo) {
-        // display sprite of card that was flipped
-        card.play('flip'); // this is so that we can find the random card 
-                           // based off of when they click, this may add
-                           // lag tho since they have to wait for the server
-                           // to respond so maybe we change this based off 
-                           // of the option
+        if(playerInfo.player === myId) {
+            // display sprite of card that was flipped
+            card.play('flip'); // this is so that we can find the random card 
+                               // based off of when they click, this may add
+                               // lag tho since they have to wait for the server
+                               // to respond so maybe we change this based off 
+                               // of the option
+        }
     });
 
     // everyone has hit ready
@@ -111,11 +116,12 @@ function create() {
 // Use addPlayer and addOtherPlayers to place sprite at the beginning of 
 // the game
 function addPlayer(self, playerInfo) {
-
+    myId = playerInfo.id;
 }
 
 function addOtherPlayers(self, playerInfo) {
     // need to figure out how we want to place the players around the table
+    OtherPlayers[playerInfo.id] = 0;
 }
 
 function update() {
