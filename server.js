@@ -2,6 +2,8 @@ var express = require('express');
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io').listen(server);
+var poker = require('./poker.json');
+var shuffle = require('shuffle-array');
 
 app.use(express.static(__dirname + '/public'));
 
@@ -9,37 +11,41 @@ app.get('/', function(req, res) {
     res.sendFile(__dirname + '/index.html');
 });
 
-var players = {}; // all player in game
+var publicPlayers = {}; // all player in game
+var privatePlayers  = {};
 var playersReady = []; // list of player objects that have hit ready
 var playersDoneFlipping = 0; // unsure if we need this and if so 
                              // if it needs to be made into a 
                              // player object array
 var currentWinner; // player object
 var didGameStart = false;
+var deck = poker['cards'];
 
 
 io.on('connection', function(socket) {
     console.log('user connected', socket.id);
-    players[socket.id] = {
-        id: Object.keys(players).length,
+    publicPlayers[socket.id] = {
+        id: Object.keys(publicPlayers).length,
         playerId: socket.id,
-        x: null,
-        y: null,
-        deckLeft: [],
-        deckPlayed: [],
         current_best_hand: []
     };
 
+    privatePlayers[socket.id] = {
+        deckLeft: [],
+        deckPlayed: []
+    }
+
     // send the new player information about the other players
-    socket.emit('currentPlayers', players);
+    socket.emit('currentPlayers', publicPlayers);
 
     // tells everyone else that a new player has join the session
-    socket.broadcast.emit('newPlayer', players[socket.id]);
+    socket.broadcast.emit('newPlayer', publicPlayers[socket.id]);
 
     // someone has disconnected
     socket.on('disconnect', function() {
         console.log('user disconnected', socket.id);
-        delete players[socket.id];
+        delete publicPlayers[socket.id];
+        delete privatePlayers[socket.id];
         if(didGameStart) {
             io.emit('gameCancelled');
         }
@@ -53,28 +59,27 @@ io.on('connection', function(socket) {
     // someone has readied up
     socket.on('ready', function(playerId) {
         playersReady.push(playerId);
-        if(playersReady.length === Object.keys(players).length) {
-            socket.broadcast.emit('gameStart');
-            didGameStart = true;
+        if(playersReady.length === Object.keys(publicPlayers).length) {
+            startGame();
         }
     });
 
     // a player has clicked to flip their card
     socket.on('playerFlipping', function () {
-        var curr_card = players[socket.id].deckLeft.pop();
-        players[socket.id].deckPlayed.push(curr_card);
+        var curr_card = privatePlayers[socket.id].deckLeft.pop();
+        privatePlayers[socket.id].deckPlayed.push(curr_card);
         //flip a card
         //updateBestHand(players[socket.id]);
         io.emit('playerFlipped', {
-            player: players[socket.id].id,
-            card: 'card'
+            player: publicPlayers[socket.id].id,
+            card: curr_card
         });
     });
 
     // someone has flipped through their whole deck
     socket.on('doneFlipping', function() {
         playersDoneFlipping += 1;
-        if(playersDoneFlipping === Object.keys(players).length) {
+        if(playersDoneFlipping === Object.keys(publicPlayers).length) {
             io.emit('gameOver', currentWinner);
         }
     });
@@ -83,6 +88,22 @@ io.on('connection', function(socket) {
 
 function updateBestHand(player) {
     
+}
+
+function startGame() {
+    console.log('Starting game');
+    shuffle(deck);
+    var handSize = Math.floor(deck.length / Object.keys(publicPlayers).length);
+    io.emit('gameStart', handSize);
+    didGameStart = true;
+    var i = 0;
+    var j;
+    Object.keys(privatePlayers).forEach(function(id) {
+        for(j = i; j < i + handSize; j++) {
+            privatePlayers[id]['deckLeft'].push(deck[j]);
+        }
+        i += handSize;
+    });
 }
 
 server.listen(8081, function() {

@@ -17,7 +17,7 @@ function preload() {
     this.load.multiatlas('deck', 'assets/deck.json', 'assets');
 }
 
-var card;
+var myCards = [];
 var cursors; 
 
 var myId;
@@ -26,6 +26,9 @@ var OtherPlayers = {};
 // stupid stuff for the current flip animation
 var isFliped = false;
 var isMoved = 0;
+var flipAnim;
+
+var didGameStart = false;
 
 function create() {
     this.socket = io();
@@ -48,6 +51,7 @@ function create() {
         addOtherPlayers(self, playerInfo);
     });
 
+
     // A player has disconnected 
     this.socket.on('disconnect', function(playerId) {
         // maybe have some logic that de-readys players 
@@ -62,19 +66,42 @@ function create() {
 
     // someone has flipped a card
     this.socket.on('playerFlipped', function(playerInfo) {
-        if(playerInfo.player === myId) {
+        if(playerInfo['player'] === myId) {
+            console.log(playerInfo['card']);
+            self.anims.remove('flip');
+            flipAnim = self.anims.create({
+                key: 'flip',
+                frames: [
+                    {key: 'deck', frame: playerInfo['card'] , duration: 100 } 
+                ],
+                frameRate: 10,
+                delay: 100, 
+            });
+            console.log(flipAnim);
             // display sprite of card that was flipped
-            card.play('flip'); // this is so that we can find the random card 
+            var currCard = myCards.pop();
+            currCard.play('flip'); // this is so that we can find the random card 
                                // based off of when they click, this may add
                                // lag tho since they have to wait for the server
                                // to respond so maybe we change this based off 
                                // of the option
+            currCard.y -= 300;
+            currCard.x -= 305;
         }
     });
 
     // everyone has hit ready
-    this.socket.on('gameStart', function() {
+    this.socket.on('gameStart', function(handSize) {
         // display sprites and check if it is your turn
+        didGameStart = true;
+        var deckX = 400;
+        var deckY = 450;
+
+        
+        for(var i = 0; i < handSize; i++) {
+            myCards.push(self.add.sprite(deckX + (i * 5) , deckY + (i * 5), 'deck', 'Card_back').setScale(.5));
+        }
+
     });
 
     // someone has won
@@ -86,30 +113,10 @@ function create() {
     // however this code has very little functionality just a 
     // good reference for how to use phaser
 
-    var frames = this.textures.get('deck').getFrameNames();
-    frames.splice( frames.indexOf('Card_back.svg'), 1 );
-    var currCard = Phaser.Math.RND.pick(frames);
-
-    var deckX = 400;
-    var deckY = 450;
-
-    this.add.sprite(deckX, deckY, 'deck', 'Card_back').setScale(.5);
-    this.add.sprite(deckX + 5, deckY, 'deck', 'Card_back').setScale(.5);
-    this.add.sprite(deckX + 10, deckY, 'deck', 'Card_back').setScale(.5);
-    this.add.sprite(deckX + 15, deckY, 'deck', 'Card_back').setScale(.5);
-    this.add.sprite(deckX + 20, deckY, 'deck', 'Card_back').setScale(.5);
-    card = this.add.sprite(deckX + 25, deckY, 'deck', 'Card_back').setScale(.5);
-
-    this.anims.create({
-        key: 'flip',
-        frames: [
-            {key: 'deck', frame: currCard, duration: 100 } 
-        ],
-        frameRate: 10,
-        delay: 100, 
-    });
-
     cursors = this.input.activePointer; // doesn't work on mobile
+    this.input.keyboard.on('keydown_R', function(event) {
+        self.socket.emit('ready');
+    });
 }
 
 
@@ -125,14 +132,7 @@ function addOtherPlayers(self, playerInfo) {
 }
 
 function update() {
-     if (cursors.isDown && !isFliped) {
-        isFliped = true;
-        
+     if (cursors.isDown && didGameStart) {
         this.socket.emit('playerFlipping');
-
-    } else if (isFliped && isMoved < 5) {
-        isMoved += 1;
-        card.y -= 60;
-        card.x -= 61;
     }
 }
