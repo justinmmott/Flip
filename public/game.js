@@ -132,6 +132,18 @@ function create() {
             self.socket.emit('ready', self.socket.id);
         }
     });
+
+    this.clickButton = this.add.text(100, 100, 'Ready', { fill: '#0f0' })
+      .setInteractive()
+      .on('pointerover', () => self.clickButton.setStyle({ fill: '#ff0'}) )
+      .on('pointerout', () =>  self.clickButton.setStyle({ fill: '#ff0'}) )
+      .on('pointerdown', () => self.clickButton.setStyle({ fill: '#0ff' }) )
+      .on('pointerup', () => {
+        if(!isReady) {
+            isReady = true;
+            self.socket.emit('ready', self.socket.id);
+        }
+    });
 }
 
 
@@ -147,6 +159,9 @@ function addOtherPlayers(self, playerInfo) {
 }
 
 function update() {
+    if(isReady) {
+        this.clickButton.destroy();
+    }
     if(cursors.isDown && didGameStart && canFlip) {
         canFlip = false;
         cardsFliped += 1;
