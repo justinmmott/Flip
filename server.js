@@ -59,6 +59,7 @@ io.on('connection', function(socket) {
     // someone has readied up
     socket.on('ready', function(playerId) {
         playersReady.push(playerId);
+        console.log(playersReady.length + "/" + Object.keys(publicPlayers).length + " players ready");
         if(playersReady.length === Object.keys(publicPlayers).length) {
             startGame();
         }
@@ -66,12 +67,13 @@ io.on('connection', function(socket) {
 
     // a player has clicked to flip their card
     socket.on('playerFlipping', function () {
+        console.log("flipping");
         var curr_card = privatePlayers[socket.id].deckLeft.pop();
         privatePlayers[socket.id].deckPlayed.push(curr_card);
         //flip a card
         //updateBestHand(players[socket.id]);
         io.emit('playerFlipped', {
-            player: publicPlayers[socket.id].id,
+            player: publicPlayers[socket.id].playerId,
             card: curr_card
         });
     });

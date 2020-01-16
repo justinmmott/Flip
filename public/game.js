@@ -23,12 +23,22 @@ var cursors;
 var myId;
 var OtherPlayers = {};
 
+var doneFlipping = 0;
+var deckSize;
+
 // stupid stuff for the current flip animation
 var isFliped = false;
 var isMoved = 0;
 var flipAnim;
+var canFlip = true;
 
 var didGameStart = false;
+var currCard;
+
+var isReady = false;
+var cardsFliped = -1;
+
+var depth;
 
 function create() {
     this.socket = io();
@@ -66,8 +76,7 @@ function create() {
 
     // someone has flipped a card
     this.socket.on('playerFlipped', function(playerInfo) {
-        if(playerInfo['player'] === myId) {
-            console.log(playerInfo['card']);
+        if(playerInfo['player'] === self.socket.id) {
             self.anims.remove('flip');
             flipAnim = self.anims.create({
                 key: 'flip',
@@ -77,16 +86,17 @@ function create() {
                 frameRate: 10,
                 delay: 100, 
             });
-            console.log(flipAnim);
-            // display sprite of card that was flipped
-            var currCard = myCards.pop();
+                        // display sprite of card that was flipped
+            currCard = myCards.pop();
+            currCard.setDepth(-1 * depth);
+            depth--;
             currCard.play('flip'); // this is so that we can find the random card 
                                // based off of when they click, this may add
                                // lag tho since they have to wait for the server
                                // to respond so maybe we change this based off 
                                // of the option
-            currCard.y -= 300;
-            currCard.x -= 305;
+            isFliped = true;
+            doneFlipping += 1;
         }
     });
 
@@ -99,8 +109,10 @@ function create() {
 
         
         for(var i = 0; i < handSize; i++) {
-            myCards.push(self.add.sprite(deckX + (i * 5) , deckY + (i * 5), 'deck', 'Card_back').setScale(.5));
+            myCards.push(self.add.sprite(deckX , deckY, 'deck', 'Card_back').setScale(.5));
         }
+        deckSize = handSize;
+        depth = handSize;
 
     });
 
@@ -115,7 +127,10 @@ function create() {
 
     cursors = this.input.activePointer; // doesn't work on mobile
     this.input.keyboard.on('keydown_R', function(event) {
-        self.socket.emit('ready');
+        if(!isReady) {
+            isReady = true;
+            self.socket.emit('ready', self.socket.id);
+        }
     });
 }
 
@@ -132,7 +147,24 @@ function addOtherPlayers(self, playerInfo) {
 }
 
 function update() {
-     if (cursors.isDown && didGameStart) {
+    if(cursors.isDown && didGameStart && canFlip) {
+        canFlip = false;
+        cardsFliped += 1;
         this.socket.emit('playerFlipping');
+    }
+
+    if(isFliped && isMoved < 5) {
+        isMoved += 1;
+        currCard.x -= (60 - (cardsFliped * 4));
+        currCard.y -=  61;
+    }
+
+    if(isFliped && isMoved === 5) {
+        isFliped = false;
+        isMoved = 0;
+    }
+
+    if(!cursors.isDown && doneFlipping != deckSize && isMoved === 0) {
+        canFlip = true;
     }
 }
