@@ -1,5 +1,6 @@
 var config = {
     type: Phaser.AUTO,
+    backgroundColor: '#00b300',
     scale: {
         parent: 'gameDiv',
         mode: Phaser.Scale.RESIZE,
@@ -13,21 +14,22 @@ var config = {
 
 var game = new Phaser.Game(config);
 
+
 function preload() {
     this.load.multiatlas('deck', 'assets/deck.json', 'assets');
 }
 
 var myCards = [];
-var cursors; 
+var cursor; 
+var touch;
 
 var myId;
 var OtherPlayers = {};
 
-var doneFlipping = 0;
 var deckSize;
 
 // stupid stuff for the current flip animation
-var isFliped = false;
+var isFlipped = false;
 var isMoved = 0;
 var flipAnim;
 var canFlip = true;
@@ -36,14 +38,14 @@ var didGameStart = false;
 var currCard;
 
 var isReady = false;
-var cardsFliped = -1;
+var cardsFlipped = -1;
 
 var depth;
 
 function create() {
+    console.log(game.scale.width);
     this.socket = io();
-    var self  = this; // I don't get why I need to do this but it errors if not
-    
+    var self  = this; 
     // the server will give you information on all other players that have 
     // joined the session
     this.socket.on('currentPlayers', function (players) {
@@ -95,8 +97,7 @@ function create() {
                                // lag tho since they have to wait for the server
                                // to respond so maybe we change this based off 
                                // of the option
-            isFliped = true;
-            doneFlipping += 1;
+            isFlipped = true;
         }
     });
 
@@ -104,12 +105,13 @@ function create() {
     this.socket.on('gameStart', function(handSize) {
         // display sprites and check if it is your turn
         didGameStart = true;
-        var deckX = 400;
-        var deckY = 450;
+        var scaleRatio = Math.sqrt((game.scale.width * game.scale.height * .02) / (167 * 242));
+        var deckX = game.scale.width * .5;
+        var deckY = game.scale.height * .8;
 
         
         for(var i = 0; i < handSize; i++) {
-            myCards.push(self.add.sprite(deckX , deckY, 'deck', 'Card_back').setScale(.5));
+            myCards.push(self.add.sprite(deckX , deckY, 'deck', 'Card_back').setScale(scaleRatio));
         }
         deckSize = handSize;
         depth = handSize;
@@ -124,18 +126,13 @@ function create() {
     // most of the code below will probably go into gameStart
     // however this code has very little functionality just a 
     // good reference for how to use phaser
+    this.input.addPointer();
+    cursor = this.input.activePointer; 
+    touch = this.input.pointer1;
 
-    cursors = this.input.activePointer; // doesn't work on mobile
-    this.input.keyboard.on('keydown_R', function(event) {
-        if(!isReady) {
-            isReady = true;
-            self.socket.emit('ready', self.socket.id);
-        }
-    });
-
-    this.clickButton = this.add.text(100, 100, 'Ready', { fill: '#0f0' })
+    this.clickButton = this.add.text(game.scale.width * .45, game.scale.height * .45, 'Ready', { fill: '#FF2D00', fontSize: '3.5vw' })
       .setInteractive()
-      .on('pointerover', () => self.clickButton.setStyle({ fill: '#ff0'}) )
+      .on('pointerover', () => self.clickButton.setStyle({ fill: '#FFFFFF'}) )
       .on('pointerout', () =>  self.clickButton.setStyle({ fill: '#ff0'}) )
       .on('pointerdown', () => self.clickButton.setStyle({ fill: '#0ff' }) )
       .on('pointerup', () => {
@@ -162,24 +159,24 @@ function update() {
     if(isReady) {
         this.clickButton.destroy();
     }
-    if(cursors.isDown && didGameStart && canFlip) {
+    if((cursor.isDown || touch.isDown) && didGameStart && canFlip) {
         canFlip = false;
-        cardsFliped += 1;
+        cardsFlipped += 1;
         this.socket.emit('playerFlipping');
     }
 
-    if(isFliped && isMoved < 5) {
+    if(isFlipped && isMoved < 5) {
         isMoved += 1;
-        currCard.x -= (60 - (cardsFliped * 4));
-        currCard.y -=  61;
+        currCard.x -= (game.scale.width * .05) - ((cardsFlipped % 5) * (currCard.displayWidth * .05));
+        currCard.y -= (game.scale.height * .07) - (Math.floor(cardsFlipped / 5) * (currCard.displayHeight * .05));
     }
 
-    if(isFliped && isMoved === 5) {
-        isFliped = false;
+    if(isFlipped && isMoved === 5) {
+        isFlipped = false;
         isMoved = 0;
     }
 
-    if(!cursors.isDown && doneFlipping != deckSize && isMoved === 0) {
+    if(!(cursor.isDown || touch.isDown) && cardsFlipped != deckSize - 1 && isMoved === 0) {
         canFlip = true;
     }
 }

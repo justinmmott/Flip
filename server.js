@@ -67,7 +67,6 @@ io.on('connection', function(socket) {
 
     // a player has clicked to flip their card
     socket.on('playerFlipping', function () {
-        console.log("flipping");
         var curr_card = privatePlayers[socket.id].deckLeft.pop();
         privatePlayers[socket.id].deckPlayed.push(curr_card);
         //flip a card
