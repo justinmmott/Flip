@@ -1,3 +1,6 @@
+const PokerHand = require('./pokerHand.js');
+const PokerHandGraph = require('./graph.js');
+
 var express = require('express');
 var app = express();
 var server = require('http').Server(app);
@@ -20,6 +23,10 @@ var playersDoneFlipping = 0; // unsure if we need this and if so
 var currentWinner; // player object
 var didGameStart = false;
 var deck = poker['cards'];
+var ordering = poker['ordering'];
+
+var graph = createGraph();
+console.log(graph);
 
 
 io.on('connection', function(socket) {
@@ -105,6 +112,23 @@ function startGame() {
         }
         i += handSize;
     });
+}
+
+function createGraph() {
+    var g = new PokerHandGraph();
+
+    // init graph with high cards
+    for(var i = 0; i < ordering.length; i++) {
+        var highCard = new PokerHand([ordering[i]], 8, i);
+        g.addHand(highCard);
+        for(hand in g.hands) {
+            highCard.addNieghbor(hand);
+        }
+    }
+
+    // Make rest of hands
+    
+    return g;
 }
 
 server.listen(8081, function() {
