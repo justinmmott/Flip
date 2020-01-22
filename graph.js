@@ -58,7 +58,7 @@ class PokerHandGraph {
                 inARow = 0;
             }
         }
-        if(res[Trips] > 0 && res[Pair] > 0){
+        if(res[Trips] > 2 || res[Trips] > 0 && res[Pair] > 0){
             res[Full_House]++;
         }
         if(res[Pair] > 1) {
