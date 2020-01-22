@@ -26,7 +26,7 @@ var deck = poker['cards'];
 var ordering = poker['ordering'];
 
 var graph = createGraph();
-console.log(graph);
+//console.log(graph);
 
 
 io.on('connection', function(socket) {
@@ -120,10 +120,7 @@ function createGraph() {
     // init graph with high cards
     for(var i = 0; i < ordering.length; i++) {
         var highCard = new PokerHand([ordering[i]], 8, i);
-        g.addHand(highCard);
-        for(hand in g.hands) {
-            highCard.addNieghbor(hand);
-        }
+        g.addHand(highCard);   
     }
 
     // Make rest of hands
