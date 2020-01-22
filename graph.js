@@ -2,6 +2,17 @@ const PokerHand = require('./pokerHand.js');
 const Card = require('./cards.js');
 var poker = require('./poker.json');
 
+const Straight_Flush = 0;
+const Quads = 1;
+const Full_House = 2;
+const Flush = 3;
+const Straight = 4;
+const Trips = 5;
+const Two_Pair = 6;
+const Pair = 7;
+const High_Card = 8;
+
+
 class PokerHandGraph {
     constructor() {
         this.hands = [];
@@ -23,35 +34,35 @@ class PokerHandGraph {
 
         for(var i = 0; i < suits.length; i++) {
             if(suits[i] > 5) {
-                res[3]++;
+                res[Flush]++;
             }
         }
 
         var inARow = 0;
         for(var i = 0; i < cards.length; i++) {
             if(inARow > 5){
-                res[4]++;
+                res[Straight]++;
             }
             if(cards[i] > 0) {
                 inARow++;
             }
             if(cards[i] === 4) {
-                res[1]++;
+                res[Quads]++;
             } else if(cards[i] === 3) {
-                res[5]++;
+                res[Trips]++;
             } else if(cards[i] === 2) {
-                res[7]++;
+                res[Pair]++;
             } else if(cards[i] === 1) {
-                res[8]++;
+                res[High_Card]++;
             } else {
                 inARow = 0;
             }
         }
-        if(res[5] > 0 && res[7] > 0){
-            res[2]++;
+        if(res[Trips] > 0 && res[Pair] > 0){
+            res[Full_House]++;
         }
-        if(res[7] > 1) {
-            res[6]++;
+        if(res[Pair] > 1) {
+            res[Two_Pair]++;
         }
 
         for(var i = 0; i < res.length; i++) {
