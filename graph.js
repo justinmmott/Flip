@@ -1,5 +1,5 @@
 const PokerHand = require('./pokerHand.js');
-const Card = require('./cards.js');
+const Card = require('./card.js');
 var poker = require('./poker.json');
 
 const Straight_Flush = 0;
