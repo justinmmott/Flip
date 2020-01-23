@@ -1,6 +1,5 @@
 {
   "cards" : [
-    "cards/ace_of_clubs.svg",
     "cards/2_of_clubs.svg",
     "cards/3_of_clubs.svg",
     "cards/4_of_clubs.svg",
@@ -13,7 +12,7 @@
     "cards/jack_of_clubs2.svg",
     "cards/queen_of_clubs2.svg",
     "cards/king_of_clubs2.svg",
-    "cards/ace_of_spades2.svg",
+    "cards/ace_of_clubs.svg",
     "cards/2_of_spades.svg",
     "cards/3_of_spades.svg",
     "cards/4_of_spades.svg",
@@ -26,7 +25,7 @@
     "cards/jack_of_spades2.svg",
     "cards/queen_of_spades2.svg",
     "cards/king_of_spades2.svg",
-    "cards/ace_of_diamonds.svg",
+    "cards/ace_of_spades2.svg",
     "cards/2_of_diamonds.svg",
     "cards/3_of_diamonds.svg",
     "cards/4_of_diamonds.svg",
@@ -39,7 +38,7 @@
     "cards/jack_of_diamonds2.svg",
     "cards/queen_of_diamonds2.svg",
     "cards/king_of_diamonds2.svg",
-    "cards/ace_of_hearts.svg",
+    "cards/ace_of_diamonds.svg",
     "cards/2_of_hearts.svg",
     "cards/3_of_hearts.svg",
     "cards/4_of_hearts.svg",
@@ -51,7 +50,8 @@
     "cards/10_of_hearts.svg",
     "cards/jack_of_hearts2.svg",
     "cards/queen_of_hearts2.svg",
-    "cards/king_of_hearts2.svg"
+    "cards/king_of_hearts2.svg",
+    "cards/ace_of_hearts.svg"
   ],
   "hands" : [
     "Straight Flush",

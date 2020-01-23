@@ -1,5 +1,6 @@
 const PokerHand = require('./pokerHand.js');
 const PokerHandGraph = require('./graph.js');
+const Card = require('./card.js');
 
 var express = require('express');
 var app = express();
@@ -22,7 +23,7 @@ var playersDoneFlipping = 0; // unsure if we need this and if so
                              // player object array
 var currentWinner; // player object
 var didGameStart = false;
-var deck = poker['cards'];
+var deck = [];
 var ordering = poker['ordering'];
 
 var graph = createGraph();
@@ -80,7 +81,7 @@ io.on('connection', function(socket) {
         //updateBestHand(players[socket.id]);
         io.emit('playerFlipped', {
             player: publicPlayers[socket.id].playerId,
-            card: curr_card
+            card: curr_card.spriteName
         });
     });
 
@@ -100,6 +101,10 @@ function updateBestHand(player) {
 
 function startGame() {
     console.log('Starting game');
+
+    for (var i = 0; i < poker['cards'].length; i++) {
+        deck.push(new Card( (i % 13) + 2, Math.floor(i / 13), poker['cards'][i]));
+    }
     shuffle(deck);
     var handSize = Math.floor(deck.length / Object.keys(publicPlayers).length);
     io.emit('gameStart', handSize);
