@@ -2,7 +2,6 @@ class PokerHand {
     constructor(cards, typeOfHand, rankingWithin) {
         this.cards = cards;
         this.handLevel = typeOfHand;
-        this.rankingWithin = rankingWithin;
         this.neighbors = [];
     }
 
